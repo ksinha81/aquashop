@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AquaShop - Fish Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Poppins',sans-serif;background:#f0f8ff;color:#333;}
+
+    /* NAV */
+    nav{background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;padding:16px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.2);}
+    .logo{font-size:1.4rem;font-weight:700;} .logo span{color:#90e0ef;}
+    .tagline{font-size:.75rem;opacity:.85;}
+
+    /* HERO */
+    .hero{background:linear-gradient(135deg,#0077b6,#00b4d8,#90e0ef);color:white;text-align:center;padding:50px 20px 32px;}
+    .hero h1{font-size:2rem;font-weight:700;margin-bottom:8px;}
+    .hero p{font-size:.95rem;opacity:.9;margin-bottom:20px;}
+    .hero .fish-emoji{font-size:2.8rem;display:block;margin-bottom:8px;}
+
+    /* GLOBAL SEARCH */
+    .global-search{background:white;padding:16px 24px;box-shadow:0 2px 8px rgba(0,0,0,.07);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .global-search input{flex:1;min-width:200px;padding:11px 16px;border:2px solid #b0dff0;border-radius:30px;font-family:'Poppins',sans-serif;font-size:.9rem;outline:none;}
+    .global-search input:focus{border-color:#0077b6;}
+    .global-search select{padding:11px 14px;border:2px solid #b0dff0;border-radius:30px;font-family:'Poppins',sans-serif;font-size:.85rem;background:white;outline:none;}
+
+    /* TABS */
+    .tabs{display:flex;justify-content:center;gap:10px;background:#e8f7fc;padding:14px;flex-wrap:wrap;}
+    .tab-btn{padding:9px 20px;border:2px solid #00b4d8;background:white;color:#00b4d8;border-radius:30px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;font-size:.85rem;transition:all .2s;}
+    .tab-btn.active,.tab-btn:hover{background:#00b4d8;color:white;}
+
+    /* SECTIONS */
+    .section{display:none;padding:28px 18px;max-width:1100px;margin:0 auto;}
+    .section.active{display:block;}
+
+    /* FISH GRID */
+    .fish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;}
+    .fish-card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,119,182,.1);transition:transform .2s,box-shadow .2s;}
+    .fish-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,119,182,.2);}
+    .fish-card .fish-img{background:linear-gradient(135deg,#caf0f8,#90e0ef);text-align:center;font-size:3.2rem;padding:22px;height:160px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .fish-card .fish-img img{width:100%;height:160px;object-fit:cover;display:block;border-radius:0;}
+    .fish-card .fish-info{padding:14px;}
+    .fish-card h3{font-size:.95rem;font-weight:600;margin-bottom:4px;}
+    .fish-card .type{font-size:.72rem;color:#0077b6;background:#e0f4ff;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:6px;}
+    .fish-card .price{font-size:1.1rem;font-weight:700;color:#0077b6;}
+    .fish-card .stock{font-size:.78rem;color:#666;margin-bottom:10px;}
+    .fish-card .stock.low{color:#e63946;font-weight:600;}
+    .add-to-cart{width:100%;padding:9px;background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;font-size:.83rem;transition:opacity .2s;}
+    .add-to-cart:disabled{background:#ccc;cursor:not-allowed;}
+    .add-to-cart:not(:disabled):hover{opacity:.85;}
+
+    /* CART */
+    .cart-empty{text-align:center;padding:60px;color:#999;}
+    .cart-item{background:white;border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .cart-item .ci-emoji{font-size:2rem;}
+    .cart-item .ci-info{flex:1;}
+    .cart-item .ci-info h4{font-weight:600;font-size:.9rem;}
+    .cart-item .ci-info p{font-size:.8rem;color:#666;}
+    .ci-qty{display:flex;align-items:center;gap:8px;}
+    .qty-btn{width:28px;height:28px;border-radius:50%;border:2px solid #00b4d8;background:white;color:#00b4d8;font-size:1rem;cursor:pointer;font-weight:700;line-height:1;}
+    .qty-btn:hover{background:#00b4d8;color:white;}
+    .ci-total{font-weight:700;color:#0077b6;min-width:80px;text-align:right;font-size:.95rem;}
+    .remove-btn{background:none;border:none;color:#e63946;cursor:pointer;font-size:1.2rem;}
+    .cart-summary{background:white;border-radius:16px;padding:22px;margin-top:18px;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+    .summary-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.9rem;}
+    .summary-row.total{font-weight:700;font-size:1.05rem;color:#0077b6;border-top:2px solid #e0f4ff;padding-top:10px;margin-top:8px;}
+    .checkout-btn{width:100%;padding:13px;background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;margin-top:14px;transition:opacity .2s;}
+    .checkout-btn:hover{opacity:.85;}
+
+
+    /* PENDING ORDERS */
+    .orders-panel{background:white;border-radius:16px;padding:22px;margin-bottom:22px;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+    .orders-panel h3{color:#0077b6;margin-bottom:14px;}
+    .order-card{border:2px solid #e0f4ff;border-radius:12px;padding:16px;margin-bottom:12px;background:#f8fbff;}
+    .order-card.pending{border-color:#ffd166;}
+    .order-card .oc-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+    .order-card .oc-num{font-weight:700;color:#0077b6;font-size:.95rem;}
+    .order-card .oc-status{font-size:.78rem;padding:3px 10px;border-radius:20px;font-weight:600;}
+    .oc-status.pending{background:#fff3cd;color:#856404;}
+    .oc-status.confirmed{background:#d1e7dd;color:#0a3622;}
+    .oc-status.rejected{background:#f8d7da;color:#721c24;}
+    .order-card .oc-details{font-size:.83rem;color:#555;margin-bottom:10px;line-height:1.7;}
+    .order-card .oc-actions{display:flex;gap:10px;flex-wrap:wrap;}
+    .btn-confirm{padding:9px 20px;background:linear-gradient(135deg,#06d6a0,#0077b6);color:white;border:none;border-radius:8px;cursor:pointer;font-family:Poppins,sans-serif;font-weight:700;font-size:.84rem;}
+    .btn-confirm:hover{opacity:.85;}
+    .btn-reject{padding:9px 20px;background:linear-gradient(135deg,#e63946,#c1121f);color:white;border:none;border-radius:8px;cursor:pointer;font-family:Poppins,sans-serif;font-weight:700;font-size:.84rem;}
+    .btn-reject:hover{opacity:.85;}
+    .no-orders{color:#999;font-size:.88rem;text-align:center;padding:20px;}
+    .order-badge{background:#e63946;color:white;border-radius:50%;font-size:.7rem;padding:2px 6px;font-weight:700;margin-left:4px;display:inline-block;}
+    /* ADMIN */
+    .admin-login{max-width:400px;margin:36px auto;background:white;border-radius:16px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center;}
+    .admin-login h2{margin-bottom:6px;} .admin-login p{font-size:.82rem;color:#888;margin-bottom:20px;}
+    .form-group{margin-bottom:14px;text-align:left;}
+    .form-group label{display:block;font-size:.82rem;font-weight:600;margin-bottom:5px;color:#555;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.88rem;transition:border-color .2s;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#00b4d8;}
+    .btn-primary{width:100%;padding:12px;background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-weight:700;font-size:.92rem;cursor:pointer;transition:opacity .2s;}
+    .btn-primary:hover{opacity:.85;}
+    .admin-panel{display:none;}
+    .admin-panel.visible{display:block;}
+    .panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+    .panel-header h2{font-size:1.2rem;}
+    .logout-btn{padding:8px 16px;background:#e63946;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;font-size:.82rem;}
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:26px;}
+    .stat-card{background:white;border-radius:12px;padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+    .stat-card .s-num{font-size:1.8rem;font-weight:700;color:#0077b6;}
+    .stat-card .s-label{font-size:.76rem;color:#888;}
+    .add-fish-form{background:white;border-radius:16px;padding:22px;margin-bottom:26px;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+    .add-fish-form h3{margin-bottom:18px;color:#0077b6;}
+    .form-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:12px;}
+    .admin-table{background:white;border-radius:16px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow-x:auto;}
+    .admin-table h3{margin-bottom:14px;color:#0077b6;}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;}
+    th{background:#e0f4ff;padding:10px 12px;text-align:left;font-weight:600;}
+    td{padding:10px 12px;border-bottom:1px solid #f0f0f0;}
+    tr:hover td{background:#f9fdff;}
+    .badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;}
+    .badge.in-stock{background:#d4edda;color:#155724;}
+    .badge.low{background:#fff3cd;color:#856404;}
+    .badge.out{background:#f8d7da;color:#721c24;}
+    .action-btns{display:flex;gap:6px;}
+    .edit-btn,.del-btn{padding:4px 10px;border:none;border-radius:6px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:.76rem;font-weight:600;}
+    .edit-btn{background:#cce5ff;color:#004085;}
+    .del-btn{background:#f8d7da;color:#721c24;}
+
+    /* MODAL OVERLAY */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center;padding:16px;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:white;border-radius:20px;padding:0;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+
+    /* FISH DETAIL MODAL */
+    .fish-detail-modal{background:white;border-radius:20px;padding:0;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+    .fish-detail-header{background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;padding:20px;display:flex;justify-content:space-between;align-items:center;}
+    .fish-detail-header h2{margin:0;font-size:1.2rem;}
+    .close-btn{background:none;border:none;color:white;font-size:1.6rem;cursor:pointer;font-weight:700;}
+    .fish-detail-body{padding:24px;}
+    .fish-detail-img{width:100%;height:300px;background:linear-gradient(135deg,#caf0f8,#90e0ef);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;overflow:hidden;}
+    .fish-detail-img img{width:100%;height:100%;object-fit:cover;display:block;}
+    .fish-detail-img span{font-size:5rem;}
+    .fish-detail-info h3{font-size:1.3rem;font-weight:700;margin-bottom:8px;color:#0077b6;}
+    .fish-detail-info .type{font-size:.85rem;color:#0077b6;background:#e0f4ff;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:12px;}
+    .fish-detail-info .price{font-size:1.4rem;font-weight:700;color:#0077b6;margin-bottom:8px;}
+    .fish-detail-info .desc{font-size:.95rem;color:#555;line-height:1.6;margin-bottom:16px;}
+    .fish-detail-info .stock{font-size:.9rem;color:#666;margin-bottom:16px;}
+    .fish-detail-info .stock.low{color:#e63946;font-weight:600;}
+    .qty-selector{display:flex;align-items:center;gap:12px;margin-bottom:20px;background:#f0f8ff;padding:12px 16px;border-radius:12px;}
+    .qty-selector label{font-size:.9rem;font-weight:600;color:#555;}
+    .qty-selector input{width:60px;padding:8px;border:2px solid #00b4d8;border-radius:8px;font-size:1rem;font-weight:700;text-align:center;}
+    .add-to-cart-btn{width:100%;padding:14px;background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .2s;}
+    .add-to-cart-btn:disabled{background:#ccc;cursor:not-allowed;}
+    .add-to-cart-btn:not(:disabled):hover{opacity:.85;}
+
+    /* CHECKOUT STEPS */
+    .checkout-steps{display:flex;background:#f0f8ff;border-radius:20px 20px 0 0;overflow:hidden;}
+    .step-indicator{flex:1;padding:14px 8px;text-align:center;font-size:.72rem;font-weight:600;color:#aaa;border-bottom:3px solid transparent;cursor:default;}
+    .step-indicator.active{color:#0077b6;border-bottom-color:#0077b6;background:white;}
+    .step-indicator.done{color:#2d6a4f;border-bottom-color:#2d6a4f;}
+    .step-num{display:block;font-size:1.1rem;margin-bottom:2px;}
+
+    .checkout-body{padding:26px;}
+    .checkout-body h2{margin-bottom:4px;font-size:1.2rem;}
+    .checkout-body .sub{font-size:.82rem;color:#888;margin-bottom:20px;}
+
+    /* ORDER SUMMARY INSIDE MODAL */
+    .order-items{background:#f8fcff;border-radius:10px;padding:14px;margin-bottom:16px;max-height:160px;overflow-y:auto;}
+    .order-item-row{display:flex;justify-content:space-between;font-size:.83rem;padding:4px 0;border-bottom:1px solid #e8f4fb;}
+    .order-item-row:last-child{border:none;}
+    .order-total-bar{display:flex;justify-content:space-between;font-weight:700;font-size:1rem;color:#0077b6;background:#e0f4ff;padding:10px 14px;border-radius:10px;margin-bottom:18px;}
+
+    /* ADDRESS FORM */
+    .address-form{}
+
+    /* PAYMENT */
+    .payment-methods{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+    .pay-method{padding:14px 10px;border:2px solid #e0e0e0;border-radius:12px;text-align:center;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s;}
+    .pay-method.selected{border-color:#0077b6;background:#e0f4ff;color:#0077b6;}
+    .pay-method .pm-icon{font-size:1.6rem;display:block;margin-bottom:4px;}
+    .upi-qr-box{background:#f8fcff;border:2px dashed #00b4d8;border-radius:14px;padding:20px;text-align:center;margin-bottom:16px;}
+    .upi-qr-box img{max-width:180px;width:100%;border-radius:8px;margin-bottom:10px;}
+    .upi-qr-box .upi-id{font-size:.85rem;font-weight:700;color:#0077b6;background:#e0f4ff;padding:6px 14px;border-radius:20px;display:inline-block;margin-bottom:6px;}
+    .upi-qr-box p{font-size:.78rem;color:#666;}
+    .upi-qr-placeholder{font-size:3rem;margin-bottom:8px;}
+
+    /* UTR INPUT */
+    .utr-box{background:#fff3cd;border-radius:10px;padding:14px;margin-bottom:16px;}
+    .utr-box p{font-size:.8rem;color:#856404;margin-bottom:8px;font-weight:600;}
+
+    /* NAV BUTTONS */
+    .modal-nav{display:flex;gap:10px;margin-top:6px;}
+    .btn-back{flex:1;padding:12px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-weight:600;cursor:pointer;}
+    .btn-next{flex:2;padding:12px;background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-weight:700;cursor:pointer;}
+
+    /* SUCCESS */
+    .success-screen{padding:36px;text-align:center;}
+    .success-screen .big-check{font-size:4.5rem;margin-bottom:10px;}
+    .success-screen h2{color:#155724;margin-bottom:6px;}
+    .success-screen .order-num{display:inline-block;background:#e0f4ff;color:#0077b6;font-size:1rem;font-weight:700;padding:8px 22px;border-radius:30px;margin:12px 0;}
+    .success-screen .order-details{background:#f8fcff;border-radius:12px;padding:16px;text-align:left;font-size:.85rem;margin-bottom:18px;}
+    .success-screen .order-details p{margin-bottom:6px;}
+    .success-screen .order-details strong{color:#0077b6;}
+
+    /* CONTACT */
+    .contact-card{background:white;border-radius:16px;padding:28px;max-width:500px;margin:0 auto;box-shadow:0 4px 14px rgba(0,0,0,.08);text-align:center;}
+    .contact-card h2{color:#0077b6;margin-bottom:6px;}
+    .contact-card p{color:#666;margin-bottom:20px;font-size:.88rem;}
+    .contact-item{display:flex;align-items:center;gap:12px;background:#f0f8ff;border-radius:10px;padding:12px 16px;margin-bottom:10px;text-align:left;}
+    .contact-item .ci-icon{font-size:1.4rem;}
+    .contact-item strong{display:block;font-size:.76rem;color:#888;}
+
+    /* GUIDE */
+    .guide-section{max-width:800px;margin:0 auto;}
+    .guide-section h2{font-size:1.4rem;color:#0077b6;margin-bottom:6px;}
+    .guide-section .intro{font-size:.88rem;color:#666;margin-bottom:28px;}
+    .guide-card{background:white;border-radius:16px;padding:24px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;gap:18px;align-items:flex-start;}
+    .guide-card .gc-num{background:linear-gradient(135deg,#0077b6,#00b4d8);color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;}
+    .guide-card h3{font-size:1rem;font-weight:700;margin-bottom:6px;color:#023e8a;}
+    .guide-card p{font-size:.85rem;color:#555;line-height:1.6;}
+    .guide-card .tip{background:#e0f4ff;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#0077b6;margin-top:8px;font-weight:500;}
+    .guide-card code{background:#f0f8ff;padding:2px 7px;border-radius:4px;font-size:.82rem;color:#0077b6;font-family:monospace;}
+
+    /* FOOTER */
+    footer{background:#023e8a;color:#90e0ef;text-align:center;padding:18px;font-size:.78rem;margin-top:40px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:28px;right:28px;background:#023e8a;color:white;padding:11px 20px;border-radius:12px;font-size:.88rem;font-weight:600;z-index:300;opacity:0;transform:translateY(20px);transition:all .3s;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateY(0);}
+
+    @media(max-width:500px){.hero h1{font-size:1.4rem;} .payment-methods{grid-template-columns:1fr 1fr;}}
+  </style>
+  
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div>
+    <div class="logo">🐠 <span id="navName">Aqua</span>Shop</div>
+    <div class="tagline" id="navTagline">Your friendly fish store</div>
+  </div>
+  <div style="font-size:.82rem;opacity:.85;" id="navAddr">📍 Mumbai</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="fish-emoji">🐟🐠🐡</span>
+  <h1>Welcome to <span id="heroName">AquaShop</span>!</h1>
+  <p>Browse live fish • Fresh stock updated daily • Easy online ordering</p>
+</div>
+
+<!-- GLOBAL SEARCH -->
+<div class="global-search">
+  <input type="text" id="searchInput" placeholder="🔍 Search for fish by name..." oninput="renderCatalog()"/>
+  <select id="filterType" onchange="renderCatalog()">
+    <option value="">All Types</option>
+    <option value="Freshwater">🌿 Freshwater</option>
+    <option value="Saltwater">🌊 Saltwater</option>
+    <option value="Tropical">🌴 Tropical</option>
+    <option value="Coldwater">❄️ Coldwater</option>
+  </select>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('catalog',this)">🐠 Browse Fish</button>
+  <button class="tab-btn" onclick="showTab('cart',this)">🛒 Cart <span id="cart-count">(0)</span></button>
+  <button class="tab-btn" onclick="showTab('admin',this)">⚙️ Admin</button>
+  <button class="tab-btn" onclick="showTab('contact',this)">📞 Contact</button>
+  <button class="tab-btn" onclick="showTab('guide',this)">📖 How to Use</button>
+</div>
+
+<!-- ══ CATALOG ══ -->
+<div id="catalog" class="section active">
+  <div class="fish-grid" id="fishGrid"></div>
+</div>
+
+<!-- ══ CART ══ -->
+<div id="cart" class="section">
+  <div id="cartItems"></div>
+  <div id="cartSummary"></div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="admin" class="section">
+  <div class="admin-login" id="adminLogin">
+    <div style="font-size:2.5rem;">🔐</div>
+    <h2>Admin Login</h2>
+    <p>Only the shop owner can access this panel</p>
+    <div class="form-group"><label>Username</label><input type="text" id="adminUser" placeholder="admin"/></div>
+    <div class="form-group"><label>Password</label><input type="password" id="adminPass" placeholder="••••••"/></div>
+    <button class="btn-primary" onclick="adminLogin()">Login →</button>
+    <p style="font-size:.72rem;color:#bbb;margin-top:10px;">Default: admin / aquashop123</p>
+  </div>
+
+  <div class="admin-panel" id="adminPanel">
+    <div class="panel-header">
+      <h2>🐠 Shop Management</h2>
+      <button class="logout-btn" onclick="adminLogout()">Logout</button>
+    </div>
+    <div class="stats-row" id="statsRow"></div>
+
+    <!-- ADD/EDIT FORM -->
+    <div class="add-fish-form">
+      <h3>➕ Add / Edit Fish</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Fish Name *</label><input type="text" id="fName" placeholder="e.g. Clownfish"/></div>
+        <div class="form-group"><label>Type *</label>
+          <select id="fType">
+            <option value="Freshwater">Freshwater</option>
+            <option value="Saltwater">Saltwater</option>
+            <option value="Tropical">Tropical</option>
+            <option value="Coldwater">Coldwater</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Emoji</label><input type="text" id="fEmoji" placeholder="🐠" maxlength="2"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Price (₹) *</label><input type="number" id="fPrice" placeholder="299" min="0" step="1"/></div>
+        <div class="form-group"><label>Quantity *</label><input type="number" id="fQty" placeholder="20" min="0"/></div>
+        <div class="form-group"><label>Description</label><input type="text" id="fDesc" placeholder="Short description..."/></div>
+      </div>
+      <div class="form-group">
+        <label>📸 Fish Thumbnail Photo</label>
+        <select id="fImagePicklist" onchange="selectLibraryImage(this.value)" style="margin-bottom:8px;">
+          <option value="">Choose from 50 built-in fish images...</option>
+        </select>
+        <input type="text" id="fImg" placeholder="Selected photo URL appears here, or paste your own image URL" oninput="previewImg(this.value)"/>
+        <input type="file" id="fImgFile" accept="image/*" style="display:none;" onchange="handleFishImageUpload(event)"/>
+        <button type="button" onclick="document.getElementById('fImgFile').click()" style="margin-top:8px;padding:10px 16px;border:2px solid #00b4d8;background:#e0f4ff;color:#0077b6;border-radius:8px;cursor:pointer;font-family:Poppins,sans-serif;font-weight:700;font-size:.86rem;">📤 Upload photo from device</button>
+        <button type="button" onclick="removeFishPhoto()" style="margin-top:8px;margin-left:8px;padding:10px 16px;border:2px solid #e63946;background:white;color:#e63946;border-radius:8px;cursor:pointer;font-family:Poppins,sans-serif;font-weight:700;font-size:.86rem;">Remove photo</button>
+        <p style="font-size:.76rem;color:#777;margin-top:6px;">Free mode: choose one of the 50 built-in image options so everyone sees the same photo. Uploaded device photos are still saved only on this browser.</p>
+        <div id="imgPreview" style="margin-top:10px;display:none;"><img id="imgPreviewImg" src="" style="max-height:120px;max-width:180px;border-radius:8px;border:2px solid #00b4d8;object-fit:cover;" alt="preview"/></div>
+      </div>
+      <input type="hidden" id="editId" value=""/>
+      <button class="btn-primary" onclick="saveFish()" style="max-width:180px;">💾 Save Fish</button>
+      <button onclick="clearForm()" style="margin-left:10px;padding:10px 18px;border:2px solid #ccc;background:white;border-radius:8px;cursor:pointer;font-family:Poppins,sans-serif;font-size:.88rem;">✖ Clear</button>
+    </div>
+
+    <!-- UPI SETTINGS -->
+    <div class="add-fish-form" style="margin-top:0;">
+      <h3>💳 UPI / Payment Settings</h3>
+      <div class="form-row">
+        <div class="form-group"><label>UPI ID</label><input type="text" id="settUpiId" placeholder="yourname@upi"/></div>
+        <div class="form-group"><label>Display Name</label><input type="text" id="settUpiName" placeholder="Shop Name"/></div>
+      </div>
+      <div class="form-group"><label>UPI QR Code Image URL <span style="font-size:.75rem;color:#aaa;">(paste image link or leave blank)</span></label>
+        <input type="text" id="settUpiQR" placeholder="https://... or paste a QR image URL"/>
+      </div>
+      <button class="btn-primary" onclick="saveSettings()" style="max-width:180px;">💾 Save Settings</button>
+    </div>
+
+
+    <!-- PENDING ORDERS -->
+    <div class="orders-panel" id="ordersPanel">
+      <h3>📬 Pending Orders <span id="pendingBadge"></span></h3>
+      <div id="ordersList"><p class="no-orders">No pending orders yet.</p></div>
+    </div>
+    <!-- TABLE -->
+    <div class="admin-table">
+      <h3>📋 Fish Inventory</h3>
+      <table>
+        <thead><tr><th>Fish</th><th>Type</th><th>Price</th><th>Qty</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="inventoryTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div id="contact" class="section">
+  <div class="contact-card">
+    <div style="font-size:2.8rem;">🐟</div>
+    <h2 id="contactName">AquaShop</h2>
+    <p>We love fish and we'd love to help you find the perfect one!</p>
+    <div class="contact-item"><div class="ci-icon">📍</div><div><strong>Address</strong><span id="contactAddr">123 Ocean Street</span></div></div>
+    <div class="contact-item"><div class="ci-icon">📞</div><div><strong>Phone</strong><span id="contactPhone">+91 98765 43210</span></div></div>
+    <div class="contact-item"><div class="ci-icon">🕐</div><div><strong>Hours</strong><span id="contactHours">Mon–Sat: 9am–7pm</span></div></div>
+    <div class="contact-item"><div class="ci-icon">📧</div><div><strong>Email</strong><span id="contactEmail">hello@aquashop.com</span></div></div>
+  </div>
+</div>
+
+<!-- ══ GUIDE ══ -->
+<div id="guide" class="section">
+  <div class="guide-section">
+    <h2>📖 Step-by-Step Guide</h2>
+    <p class="intro">This guide explains how <strong>shop owners</strong> and <strong>customers</strong> can use AquaShop. Share this link with anyone!</p>
+
+    <div style="background:#e0f4ff;border-radius:14px;padding:16px 20px;margin-bottom:22px;">
+      <strong style="color:#0077b6;">👨‍💼 FOR SHOP OWNERS</strong>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">1</div>
+      <div>
+        <h3>Open the Admin Panel</h3>
+        <p>Click the <strong>⚙️ Admin</strong> tab at the top. Enter your username and password to log in.</p>
+        <div class="tip">💡 Default login: Username = <code>admin</code> &nbsp; Password = <code>aquashop123</code> — Change this in the config!</div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">2</div>
+      <div>
+        <h3>Add Your Fish</h3>
+        <p>Fill in the <strong>Fish Name, Type, Emoji, Price (₹), Quantity</strong> and a short description. Click <strong>💾 Save Fish</strong>. The fish instantly appears in the customer catalog!</p>
+        <div class="tip">💡 To update stock later, click ✏️ Edit next to any fish and change the quantity.</div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">3</div>
+      <div>
+        <h3>Set Up Your UPI QR Code</h3>
+        <p>In the <strong>💳 UPI / Payment Settings</strong> box, enter your UPI ID (e.g. <code>yourshop@paytm</code>), your shop name, and paste the URL of your UPI QR code image. Customers will see this at checkout.</p>
+        <div class="tip">💡 To get a QR image URL: Open Google Pay / PhonePe → Your QR → Screenshot → Upload to <a href="https://imgbb.com" target="_blank" style="color:#0077b6;">imgbb.com</a> → Copy the direct image link.</div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">4</div>
+      <div>
+        <h3>Share the Website Link with Customers</h3>
+        <p>Host this file for free on <strong>Netlify</strong>: Go to <a href="https://app.netlify.com/drop" target="_blank" style="color:#0077b6;">app.netlify.com/drop</a>, drag and drop this HTML file, and get a free link like <code>https://amazing-fish-123.netlify.app</code>. Share it on WhatsApp, Instagram, or print it as a QR!</p>
+        <div class="tip">💡 It's completely free and takes under 1 minute to publish!</div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">5</div>
+      <div>
+        <h3>Monitor Your Inventory</h3>
+        <p>The Admin Panel shows you a live dashboard: total fish types, total stock, how many are <strong style="color:#e63946;">low stock</strong>, and how many are <strong style="color:#721c24;">out of stock</strong>. When a customer places an order, stock is automatically reduced.</p>
+      </div>
+    </div>
+
+    <div style="background:#e0f4ff;border-radius:14px;padding:16px 20px;margin:24px 0 16px;">
+      <strong style="color:#0077b6;">🛍️ FOR CUSTOMERS</strong>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">1</div>
+      <div>
+        <h3>Browse Fish</h3>
+        <p>Use the <strong>🔍 search bar</strong> to find any fish by name, or use the dropdown to filter by type (Freshwater, Saltwater, Tropical, Coldwater). Each card shows the price, availability, and stock count.</p>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">2</div>
+      <div>
+        <h3>Add to Cart &amp; Review</h3>
+        <p>Click <strong>🛒 Add to Cart</strong> on any available fish. Go to the <strong>🛒 Cart</strong> tab to review your items, adjust quantities, or remove anything. The total with tax is shown at the bottom.</p>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="gc-num">3</div>
+      <div>
+        <h3>Checkout in 3 Simple Steps</h3>
+        <p><strong>Step 1 – Review</strong> your order items and total.<br/>
+        <strong>Step 2 – Address</strong> – Enter your name, phone, and delivery address.<br/>
+        <strong>Step 3 – Pay</strong> – Choose UPI (scan the QR), Cash, or Card. For UPI, scan the QR code shown on screen and enter your UTR/transaction number to confirm.</p>
+        <div class="tip">💡 You'll get an Order Number at the end — save it as proof of purchase!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>🐠 AquaShop · Powered by love for fish · © 2026</footer>
+
+<!-- ══════════ CHECKOUT MODAL ══════════ -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+
+    <!-- STEP INDICATORS -->
+    <div class="checkout-steps">
+      <div class="step-indicator active" id="si1"><span class="step-num">📋</span>Review</div>
+      <div class="step-indicator" id="si2"><span class="step-num">📍</span>Address</div>
+      <div class="step-indicator" id="si3"><span class="step-num">💳</span>Payment</div>
+    </div>
+
+    <!-- STEP 1: ORDER REVIEW -->
+    <div class="checkout-body" id="step1">
+      <h2>📋 Your Order</h2>
+      <p class="sub">Review items before placing your order</p>
+      <div class="order-items" id="modalOrderItems"></div>
+      <div class="order-total-bar">
+        <span>Total (incl. tax)</span>
+        <span id="modalTotalAmt"></span>
+      </div>
+      <div class="modal-nav">
+        <button class="btn-back" onclick="closeModal()">✖ Cancel</button>
+        <button class="btn-next" onclick="goStep(2)">Next: Address →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: ADDRESS -->
+    <div class="checkout-body" id="step2" style="display:none;">
+      <h2>📍 Delivery / Pickup Details</h2>
+      <p class="sub">Where should we prepare your order for?</p>
+      <div class="form-group"><label>Full Name *</label><input type="text" id="custName" placeholder="Your full name"/></div>
+      <div class="form-group"><label>Phone Number *</label><input type="text" id="custPhone" placeholder="+91 00000 00000"/></div>
+      <div class="form-group"><label>Delivery Address *</label>
+        <textarea id="custAddress" rows="3" placeholder="Flat no, Street, Area, City, Pincode..." style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;font-family:Poppins,sans-serif;font-size:.88rem;resize:vertical;"></textarea>
+      </div>
+      <div class="form-group"><label>Order Notes <span style="font-size:.75rem;color:#aaa;">(optional)</span></label>
+        <input type="text" id="custNotes" placeholder="e.g. Leave at door, call on arrival..."/>
+      </div>
+      <div class="modal-nav">
+        <button class="btn-back" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" onclick="goStep(3)">Next: Payment →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: PAYMENT -->
+    <div class="checkout-body" id="step3" style="display:none;">
+      <h2>💳 Choose Payment</h2>
+      <p class="sub">Select how you'd like to pay</p>
+      <div class="payment-methods">
+        <div class="pay-method selected" onclick="selectPay(this,'upi')"><span class="pm-icon">📱</span>UPI / QR Pay</div>
+        <div class="pay-method" onclick="selectPay(this,'cash')"><span class="pm-icon">💵</span>Cash on Pickup</div>
+        <div class="pay-method" onclick="selectPay(this,'card')"><span class="pm-icon">💳</span>Debit / Credit Card</div>
+        <div class="pay-method" onclick="selectPay(this,'bank')"><span class="pm-icon">🏦</span>Bank Transfer</div>
+      </div>
+
+      <!-- UPI BOX -->
+      <div class="upi-qr-box" id="upiBox">
+        <div id="upiQRimg"></div>
+        <div class="upi-id" id="upiIdDisplay">Loading...</div>
+        <p>Scan the QR code with any UPI app<br/>(PhonePe, GPay, Paytm, BHIM...)</p>
+        <div style="font-weight:700;color:#0077b6;margin-top:10px;font-size:.95rem;" id="upiAmtDisplay"></div>
+      </div>
+
+      <!-- UTR ENTRY -->
+      <div class="utr-box" id="utrBox">
+        <p>⚠️ After paying, enter your UTR / Transaction ID below to confirm your order:</p>
+        <div class="form-group" style="margin:0;"><input type="text" id="utrInput" placeholder="e.g. 426812345678"/></div>
+      </div>
+
+      <div class="modal-nav">
+        <button class="btn-back" onclick="goStep(2)">← Back</button>
+        <button class="btn-next" onclick="confirmPayment()">✅ Confirm Order</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div class="success-screen" id="successScreen" style="display:none;">
+      <div class="big-check">✅</div>
+      <h2>Order Confirmed!</h2>
+      <div class="order-num" id="orderNumDisplay"></div>
+      <div class="order-details" id="orderDetailsBlock"></div>
+      <p style="font-size:.82rem;color:#888;margin-bottom:16px;">Screenshot this page or note your order number for reference.</p>
+      <button class="btn-primary" onclick="closeModal()">🐠 Done! Back to Shop</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FISH DETAIL MODAL -->
+<div class="modal-overlay" id="fishDetailOverlay">
+  <div class="fish-detail-modal">
+    <div class="fish-detail-header">
+      <h2 id="fdName"></h2>
+      <button class="close-btn" onclick="closeFishDetail()">✕</button>
+    </div>
+    <div class="fish-detail-body">
+      <div class="fish-detail-img" id="fdImg"></div>
+      <div class="fish-detail-info">
+        <h3 id="fdTitle"></h3>
+        <span class="type" id="fdType"></span>
+        <div class="price" id="fdPrice"></div>
+        <div class="stock" id="fdStock"></div>
+        <p class="desc" id="fdDesc"></p>
+        <div class="qty-selector">
+          <label for="fdQtyInput">Quantity:</label>
+          <input type="number" id="fdQtyInput" value="1" min="1" max="100"/>
+        </div>
+        <button class="add-to-cart-btn" id="fdAddBtn" onclick="addToCartFromDetail()">🛒 Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://vpwlugqmpzyfbvqgufpz.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZwd2x1Z3FtcHp5ZmJ2cWd1ZnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyNjcwMjYsImV4cCI6MjA5OTg0MzAyNn0.M-nQJJxlrYsNZ3Tt5cEN19coOSbnpiYNIn8x99wqJR8";
+// ══════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════
+let _supabase = null;
+try { if (typeof supabase !== "undefined") { _supabase = supabase.createClient(SUPABASE_URL||"", SUPABASE_KEY||""); } } catch(e) { console.warn("Supabase unavailable:", e.message); }
+
+// ════════════════════════════════
+// SHOP CONFIG — EDIT FOR EACH SHOP
+// ════════════════════════════════
+let SHOP_CONFIG = {
+  name: "AquaShop",
+  tagline: "Your friendly fish store",
+  address: "123 Ocean Street, Blue Bay, Mumbai – 400001",
+  phone: "+91 98765 43210",
+  email: "hello@aquashop.com",
+  hours: "Mon–Sat: 9am – 7pm  |  Sun: 10am – 5pm",
+  currency: "₹",
+  adminUser: "admin",
+  adminPass: "aquashop123",
+  upiId: "aquashop@paytm",
+  upiName: "AquaShop",
+  upiQR: ""  // paste image URL here
+};
+
+// ════════════════════
+// BUILT-IN FISH IMAGE LIBRARY
+// 50 free preset choices. These are online image-search URLs, so everyone can see them without a backend.
+// For best reliability later, you can replace any URL with your own image file path like "images/betta.jpg".
+// ════════════════════
+const FISH_IMAGE_LIBRARY = [
+  { name:"Betta Fish",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Bettafish.png/320px-Bettafish.png" },
+  { name:"Goldfish",                 url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/320px-Camponotus_flavomarginatus_ant.jpg" },
+  { name:"Guppy",                    url:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Guppy_-_Poecilia_reticulata.jpg/320px-Guppy_-_Poecilia_reticulata.jpg" },
+  { name:"Neon Tetra",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Neonfish.jpg/320px-Neonfish.jpg" },
+  { name:"Angelfish",                url:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Pterophyllum_scalare.jpg/320px-Pterophyllum_scalare.jpg" },
+  { name:"Molly Fish",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Sailfin_molly.jpg/320px-Sailfin_molly.jpg" },
+  { name:"Platy Fish",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Platy_fish.jpg/320px-Platy_fish.jpg" },
+  { name:"Swordtail Fish",           url:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Xiphophorus_helleri.jpg/320px-Xiphophorus_helleri.jpg" },
+  { name:"Zebra Danio",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Danio_rerio_Zebrafisch.jpg/320px-Danio_rerio_Zebrafisch.jpg" },
+  { name:"Clownfish",                url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Amphiprion_ocellaris.jpg/320px-Amphiprion_ocellaris.jpg" },
+  { name:"Blue Tang",                url:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/BlueTang.jpg/320px-BlueTang.jpg" },
+  { name:"Discus Fish",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Discus_Fish.jpg/320px-Discus_Fish.jpg" },
+  { name:"Oscar Fish",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Astronotus_ocellatus.jpg/320px-Astronotus_ocellatus.jpg" },
+  { name:"Koi Fish",                 url:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Koi_fish.jpg/320px-Koi_fish.jpg" },
+  { name:"Arowana",                  url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Silver_Arowana.jpg/320px-Silver_Arowana.jpg" },
+  { name:"Corydoras Catfish",        url:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Corydoras_adolfoi.jpg/320px-Corydoras_adolfoi.jpg" },
+  { name:"Pleco Fish",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Plecostomus.jpg/320px-Plecostomus.jpg" },
+  { name:"Rainbowfish",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Melanotaenia_fluviatilis.jpg/320px-Melanotaenia_fluviatilis.jpg" },
+  { name:"Cherry Barb",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Cherry_barb.jpg/320px-Cherry_barb.jpg" },
+  { name:"Tiger Barb",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Tiger_barb.jpg/320px-Tiger_barb.jpg" },
+  { name:"Harlequin Rasbora",        url:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Rasbora_heteromorpha.jpg/320px-Rasbora_heteromorpha.jpg" },
+  { name:"Rummy Nose Tetra",         url:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Rummynose_tetra.jpg/320px-Rummynose_tetra.jpg" },
+  { name:"Cardinal Tetra",           url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Cardinal_tetra_Paracheirodon_axelrodi.jpg/320px-Cardinal_tetra_Paracheirodon_axelrodi.jpg" },
+  { name:"Black Molly",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Black_molly.jpg/320px-Black_molly.jpg" },
+  { name:"Pearl Gourami",            url:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Pearl_gourami.jpg/320px-Pearl_gourami.jpg" },
+  { name:"Dwarf Gourami",            url:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Dwarf_gourami.jpg/320px-Dwarf_gourami.jpg" },
+  { name:"Honey Gourami",            url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Honey_gourami.jpg/320px-Honey_gourami.jpg" },
+  { name:"Siamese Algae Eater",      url:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Siamese_algae_eater.jpg/320px-Siamese_algae_eater.jpg" },
+  { name:"Otocinclus Catfish",       url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Otocinclus_catfish.jpg/320px-Otocinclus_catfish.jpg" },
+  { name:"Glass Catfish",            url:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Glass_catfish.jpg/320px-Glass_catfish.jpg" },
+  { name:"Red Tail Shark",           url:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Red_tailed_black_shark.jpg/320px-Red_tailed_black_shark.jpg" },
+  { name:"Rainbow Shark",            url:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Rainbow_shark_fish.jpg/320px-Rainbow_shark_fish.jpg" },
+  { name:"Electric Yellow Cichlid",  url:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Yellow_lab_cichlid.jpg/320px-Yellow_lab_cichlid.jpg" },
+  { name:"Flowerhorn Cichlid",       url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Flowerhorn_cichlid.jpg/320px-Flowerhorn_cichlid.jpg" },
+  { name:"Jack Dempsey Fish",        url:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Jack_Dempsey_fish.jpg/320px-Jack_Dempsey_fish.jpg" },
+  { name:"Convict Cichlid",          url:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Convict_cichlid.jpg/320px-Convict_cichlid.jpg" },
+  { name:"Ram Cichlid",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Ram_cichlid.jpg/320px-Ram_cichlid.jpg" },
+  { name:"Killifish",                url:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Gardneri_killifish.jpg/320px-Gardneri_killifish.jpg" },
+  { name:"Endler Guppy",             url:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Endler_guppy.jpg/320px-Endler_guppy.jpg" },
+  { name:"White Cloud Mountain Minnow",url:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/White_cloud_mountain_minnow.jpg/320px-White_cloud_mountain_minnow.jpg" },
+  { name:"Celestial Pearl Danio",    url:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Celestial_Pearl_Danio.jpg/320px-Celestial_Pearl_Danio.jpg" },
+  { name:"Rosy Barb",                url:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Rosy_barb.jpg/320px-Rosy_barb.jpg" },
+  { name:"Black Skirt Tetra",        url:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Black_skirt_tetra.jpg/320px-Black_skirt_tetra.jpg" },
+  { name:"Serpae Tetra",             url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Serpae_tetra.jpg/320px-Serpae_tetra.jpg" },
+  { name:"Ember Tetra",              url:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Ember_tetra.jpg/320px-Ember_tetra.jpg" },
+  { name:"Bala Shark",               url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Bala_shark.jpg/320px-Bala_shark.jpg" },
+  { name:"Silver Dollar Fish",       url:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Silver_dollar_fish.jpg/320px-Silver_dollar_fish.jpg" },
+  { name:"Pictus Catfish",           url:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Pictus_catfish.jpg/320px-Pictus_catfish.jpg" },
+  { name:"Mandarin Fish",            url:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Synchiropus_splendidus_2.jpg/320px-Synchiropus_splendidus_2.jpg" },
+  { name:"Lionfish",                 url:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Pterois_volitans_Manado.jpg/320px-Pterois_volitans_Manado.jpg" }
+];
+
+function makeFishThumbnail(name, index) {
+  const colors = [['#4361ee','#4cc9f0'], ['#ef476f','#ffd166'], ['#06d6a0','#90e0ef']];
+  const c = colors[index % colors.length];
+  const safeName = String(name || 'Fish').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400"><rect width="600" height="400" fill="#caf0f8"/><ellipse cx="300" cy="190" rx="120" ry="65" fill="${c[0]}"/><polygon points="410,190 520,120 490,190 520,260" fill="${c[1]}"/><circle cx="245" cy="175" r="12" fill="#052c46"/><text x="300" y="350" text-anchor="middle" font-family="Arial" font-size="32" font-weight="700" fill="#0077b6">${safeName}</text></svg>`;
+  return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+}
+
+function getLibraryImage(name) {
+  const key = String(name || '').toLowerCase().trim();
+  let item = FISH_IMAGE_LIBRARY.find(f => f.name.toLowerCase() === key);
+  if (!item) item = FISH_IMAGE_LIBRARY.find(f => f.name.toLowerCase().includes(key) || key.includes(f.name.toLowerCase().replace(' fish','')));
+  return item ? item.url : makeFishThumbnail(name || 'Fish', 0);
+}
+
+// ════════════════════
+// FISH INVENTORY DATA — default shop shows only 10 fish, chosen from the 50-image library
+// ════════════════════
+let fishData = [
+  { id:1, name:"Betta Fish", type:"Tropical", emoji:"🐟", price:299, qty:20, desc:"Vibrant colors, easy to keep", img:getLibraryImage("Betta Fish") },
+  { id:2, name:"Goldfish", type:"Coldwater", emoji:"🐡", price:99, qty:35, desc:"Classic beginner fish", img:getLibraryImage("Goldfish") },
+  { id:3, name:"Guppy", type:"Freshwater", emoji:"🐠", price:79, qty:45, desc:"Colorful livebearer, great for beginners", img:getLibraryImage("Guppy") },
+  { id:4, name:"Neon Tetra", type:"Freshwater", emoji:"💙", price:79, qty:50, desc:"Peaceful schooling fish with bright blue color", img:getLibraryImage("Neon Tetra") },
+  { id:5, name:"Angelfish", type:"Tropical", emoji:"🌟", price:449, qty:8, desc:"Elegant triangular shape and graceful swimming", img:getLibraryImage("Angelfish") },
+  { id:6, name:"Molly Fish", type:"Freshwater", emoji:"🐟", price:129, qty:30, desc:"Hardy community fish available in many colors", img:getLibraryImage("Molly Fish") },
+  { id:7, name:"Platy Fish", type:"Freshwater", emoji:"🐠", price:119, qty:25, desc:"Friendly, colorful, and easy to care for", img:getLibraryImage("Platy Fish") },
+  { id:8, name:"Clownfish", type:"Saltwater", emoji:"🐠", price:499, qty:12, desc:"Popular saltwater fish with bright orange stripes", img:getLibraryImage("Clownfish") },
+  { id:9, name:"Blue Tang", type:"Saltwater", emoji:"🐳", price:999, qty:6, desc:"Stunning ocean-blue saltwater fish", img:getLibraryImage("Blue Tang") },
+  { id:10, name:"Discus Fish", type:"Tropical", emoji:"🔵", price:1499, qty:5, desc:"Premium colorful centerpiece fish", img:getLibraryImage("Discus Fish") },
+];
+
+let cart = [];
+let nextId = 11;
+let isAdmin = false;
+let selectedPayMethod = "upi";
+let currentStep = 1;
+
+// ─── LOCAL SAVE / LOAD ───
+// This lets the shop owner add fish/photos from the Admin Panel and keep them on the same browser.
+const INVENTORY_VERSION = 'fish-real-photo-library-v5';
+
+function saveInventoryLocal() {
+  try {
+    localStorage.setItem('aquashop_inventoryVersion', INVENTORY_VERSION);
+    localStorage.setItem('aquashop_fishData', JSON.stringify(fishData));
+    localStorage.setItem('aquashop_nextId', String(nextId));
+  } catch (e) {
+    console.warn('Local save unavailable:', e);
+  }
+}
+
+function loadInventoryLocal() {
+  try {
+    const savedVersion = localStorage.getItem('aquashop_inventoryVersion');
+    const saved = localStorage.getItem('aquashop_fishData');
+    const savedNext = localStorage.getItem('aquashop_nextId');
+    // If this is an older browser copy, ignore old emoji-only saved data and load the new 50-image version.
+    if (saved && savedVersion === INVENTORY_VERSION) fishData = JSON.parse(saved);
+    if (savedNext && savedVersion === INVENTORY_VERSION) nextId = parseInt(savedNext) || nextId;
+  } catch (e) {
+    console.warn('Local load unavailable:', e);
+  }
+}
+
+// ─── BUILT-IN IMAGE PICKLIST ───
+function populateImagePicklist() {
+  const sel = document.getElementById('fImagePicklist');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Choose from 50 built-in fish images...</option>' +
+    FISH_IMAGE_LIBRARY.map(item => `<option value="${item.url}">${item.name}</option>`).join('');
+}
+
+function selectLibraryImage(url) {
+  if (!url) return;
+  document.getElementById('fImg').value = url;
+  previewImg(url);
+}
+
+function syncPicklistToImage(url) {
+  const sel = document.getElementById('fImagePicklist');
+  if (!sel) return;
+  const match = FISH_IMAGE_LIBRARY.find(item => item.url === url);
+  sel.value = match ? match.url : '';
+}
+
+// ─── INIT UI ───
+function initUI() {
+  populateImagePicklist();
+  document.getElementById('navName').textContent = SHOP_CONFIG.name.replace('Shop','');
+  document.getElementById('navTagline').textContent = SHOP_CONFIG.tagline;
+  document.getElementById('navAddr').textContent = '📍 ' + SHOP_CONFIG.address.split(',')[0];
+  document.getElementById('heroName').textContent = SHOP_CONFIG.name;
+  document.getElementById('contactName').textContent = SHOP_CONFIG.name;
+  document.getElementById('contactAddr').textContent = SHOP_CONFIG.address;
+  document.getElementById('contactPhone').textContent = SHOP_CONFIG.phone;
+  document.getElementById('contactHours').textContent = SHOP_CONFIG.hours;
+  document.getElementById('contactEmail').textContent = SHOP_CONFIG.email;
+  // pre-fill admin settings
+  document.getElementById('settUpiId').value = SHOP_CONFIG.upiId;
+  document.getElementById('settUpiName').value = SHOP_CONFIG.upiName;
+  document.getElementById('settUpiQR').value = SHOP_CONFIG.upiQR;
+}
+
+// ─── TABS ───
+function showTab(tab, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (tab === 'catalog') renderCatalog();
+  if (tab === 'cart') renderCart();
+  if (tab === 'admin' && isAdmin) renderAdmin();
+}
+
+// ─── CATALOG ───
+function renderCatalog() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const type = document.getElementById('filterType').value;
+  const grid = document.getElementById('fishGrid');
+  const filtered = fishData.filter(f =>
+    f.name.toLowerCase().includes(search) && (type === '' || f.type === type)
+  );
+  if (!filtered.length) {
+    grid.innerHTML = '<p style="color:#999;text-align:center;grid-column:1/-1;padding:50px;">No fish found 🐟</p>';
+    return;
+  }
+  grid.innerHTML = filtered.map(f => {
+    const out = f.qty === 0;
+    const low = f.qty > 0 && f.qty <= 5;
+    const imgHtml = f.img
+      ? `<img src="${f.img}" alt="${f.name}" style="width:100%;height:160px;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextSibling.style.display='flex'"/><span style="display:none;width:100%;height:160px;align-items:center;justify-content:center;font-size:3.2rem;">${f.emoji||'🐟'}</span>`
+      : `<span style="font-size:3.2rem;">${f.emoji||'🐟'}</span>`;
+    return `<div class="fish-card" onclick="openFishDetail(${f.id})" style="cursor:pointer;">
+      <div class="fish-img">${imgHtml}</div>
+      <div class="fish-info">
+        <h3>${f.name}</h3>
+        <span class="type">${f.type}</span>
+        <p style="font-size:.78rem;color:#666;margin-bottom:7px;">${f.desc || ''}</p>
+        <div class="price">${SHOP_CONFIG.currency}${f.price.toLocaleString('en-IN')}</div>
+        <div class="stock ${out||low?'low':''}">
+          ${out ? '❌ Out of Stock' : low ? `⚠️ Only ${f.qty} left!` : `✅ In Stock (${f.qty})`}
+        </div>
+        <button class="add-to-cart" onclick="event.stopPropagation(); openFishDetail(${f.id})" ${out?'disabled':''}>🛒 View & Add to Cart</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── CART LOGIC ───
+function addToCart(id, qty = 1) {
+  const fish = fishData.find(f => f.id === id);
+  if (!fish || fish.qty === 0) return;
+  const ex = cart.find(c => c.id === id);
+  if (ex) {
+    if (ex.qty + qty > fish.qty) { showToast('⚠️ Not enough stock!'); return; }
+    ex.qty += qty;
+  } else {
+    if (qty > fish.qty) { showToast('⚠️ Not enough stock!'); return; }
+    cart.push({ id: fish.id, name: fish.name, emoji: fish.emoji, price: fish.price, qty: qty });
+  }
+  updateCartCount();
+  showToast(`🐠 ${fish.name} × ${qty} added to cart!`);
+}
+
+function openFishDetail(id) {
+  const f = fishData.find(fish => fish.id === id);
+  if (!f) return;
+  
+  document.getElementById('fdName').textContent = f.name;
+  document.getElementById('fdTitle').textContent = f.name;
+  document.getElementById('fdType').textContent = f.type;
+  document.getElementById('fdPrice').textContent = SHOP_CONFIG.currency + f.price.toLocaleString('en-IN');
+  document.getElementById('fdDesc').textContent = f.desc || 'High quality aquarium fish.';
+  
+  const out = f.qty === 0;
+  const low = f.qty > 0 && f.qty <= 5;
+  const stockText = out ? '❌ Out of Stock' : low ? `⚠️ Only ${f.qty} left!` : `✅ In Stock (${f.qty})`;
+  document.getElementById('fdStock').textContent = stockText;
+  document.getElementById('fdStock').className = 'stock ' + (out || low ? 'low' : '');
+  
+  // Image
+  const imgHtml = f.img
+    ? `<img src="${f.img}" alt="${f.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex'"/><span style="display:none;width:100%;height:300px;align-items:center;justify-content:center;font-size:4rem;">${f.emoji||'🐟'}</span>`
+    : `<span style="font-size:4rem;">${f.emoji||'🐟'}</span>`;
+  document.getElementById('fdImg').innerHTML = imgHtml;
+  
+  // Qty input
+  document.getElementById('fdQtyInput').value = 1;
+  document.getElementById('fdQtyInput').max = f.qty || 100;
+  
+  // Button
+  const btn = document.getElementById('fdAddBtn');
+  btn.disabled = out;
+  btn.textContent = out ? '❌ Out of Stock' : '🛒 Add to Cart';
+  
+  // Store current fish ID for adding to cart
+  window.currentFishDetailId = id;
+  
+  document.getElementById('fishDetailOverlay').classList.add('open');
+}
+
+function closeFishDetail() {
+  document.getElementById('fishDetailOverlay').classList.remove('open');
+  window.currentFishDetailId = null;
+}
+
+function addToCartFromDetail() {
+  const id = window.currentFishDetailId;
+  const qty = parseInt(document.getElementById('fdQtyInput').value) || 1;
+  if (!id || qty < 1) return;
+  addToCart(id, qty);
+  closeFishDetail();
+}
+
+function updateCartCount() {
+  document.getElementById('cart-count').textContent = `(${cart.reduce((s,c)=>s+c.qty,0)})`;
+}
+
+function renderCart() {
+  const ci = document.getElementById('cartItems');
+  const cs = document.getElementById('cartSummary');
+  if (!cart.length) {
+    ci.innerHTML = '<div class="cart-empty">🐟<br/>Your cart is empty<br/><small>Go browse fish and add some!</small></div>';
+    cs.innerHTML = '';
+    return;
+  }
+  ci.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="ci-emoji">${item.emoji||'🐟'}</div>
+      <div class="ci-info"><h4>${item.name}</h4><p>${SHOP_CONFIG.currency}${item.price.toLocaleString('en-IN')} each</p></div>
+      <div class="ci-qty">
+        <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+        <span>${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+      </div>
+      <div class="ci-total">${SHOP_CONFIG.currency}${(item.price*item.qty).toLocaleString('en-IN')}</div>
+      <button class="remove-btn" onclick="removeFromCart(${item.id})">🗑️</button>
+    </div>`).join('');
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const tax = Math.round(sub*0.05);
+  const total = sub + tax;
+  cs.innerHTML = `<div class="cart-summary">
+    <h3>Order Summary</h3>
+    <div class="summary-row"><span>Subtotal</span><span>${SHOP_CONFIG.currency}${sub.toLocaleString('en-IN')}</span></div>
+    <div class="summary-row"><span>GST (5%)</span><span>${SHOP_CONFIG.currency}${tax.toLocaleString('en-IN')}</span></div>
+    <div class="summary-row total"><span>Total</span><span>${SHOP_CONFIG.currency}${total.toLocaleString('en-IN')}</span></div>
+    <button class="checkout-btn" onclick="openCheckout()">💳 Proceed to Checkout →</button>
+  </div>`;
+}
+
+function changeQty(id, d) {
+  const item = cart.find(c=>c.id===id);
+  const fish = fishData.find(f=>f.id===id);
+  if (!item) return;
+  item.qty += d;
+  if (item.qty<=0) cart=cart.filter(c=>c.id!==id);
+  if (fish && item.qty>fish.qty) { item.qty=fish.qty; showToast('⚠️ Max stock reached!'); }
+  updateCartCount(); renderCart();
+}
+
+function removeFromCart(id) { cart=cart.filter(c=>c.id!==id); updateCartCount(); renderCart(); }
+
+// ─── CHECKOUT ───
+function openCheckout() {
+  if (!cart.length) return;
+  currentStep = 1;
+  renderCheckoutModal();
+  document.getElementById('payModal').classList.add('open');
+}
+
+function renderCheckoutModal() {
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const tax = Math.round(sub*0.05);
+  const total = sub + tax;
+
+  document.getElementById('modalOrderItems').innerHTML = cart.map(c =>
+    `<div class="order-item-row"><span>${c.emoji} ${c.name} × ${c.qty}</span><span>${SHOP_CONFIG.currency}${(c.price*c.qty).toLocaleString('en-IN')}</span></div>`
+  ).join('') + `<div class="order-item-row" style="font-size:.78rem;color:#888;"><span>GST 5%</span><span>${SHOP_CONFIG.currency}${tax.toLocaleString('en-IN')}</span></div>`;
+
+  document.getElementById('modalTotalAmt').textContent = SHOP_CONFIG.currency + total.toLocaleString('en-IN');
+
+  // UPI display
+  const upiQR = SHOP_CONFIG.upiQR;
+  document.getElementById('upiIdDisplay').textContent = SHOP_CONFIG.upiId || 'yourshop@upi';
+  document.getElementById('upiAmtDisplay').textContent = `Amount to pay: ${SHOP_CONFIG.currency}${total.toLocaleString('en-IN')}`;
+  if (upiQR) {
+    document.getElementById('upiQRimg').innerHTML = `<img src="${upiQR}" alt="UPI QR Code"/>`;
+  } else {
+    document.getElementById('upiQRimg').innerHTML = `<div class="upi-qr-placeholder">📲</div><p style="font-size:.8rem;color:#0077b6;margin-bottom:8px;">QR not set yet — ask shop owner to add it in Admin Panel</p>`;
+  }
+
+  updateStepIndicators();
+  showSteps();
+}
+
+function goStep(n) {
+  if (n === 2) {
+    // validate nothing needed from step 1
+  }
+  if (n === 3) {
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const addr = document.getElementById('custAddress').value.trim();
+    if (!name || !phone || !addr) { showToast('⚠️ Please fill in all required fields!'); return; }
+  }
+  currentStep = n;
+  updateStepIndicators();
+  showSteps();
+}
+
+function updateStepIndicators() {
+  for (let i=1;i<=3;i++) {
+    const el = document.getElementById('si'+i);
+    el.classList.remove('active','done');
+    if (i===currentStep) el.classList.add('active');
+    else if (i<currentStep) el.classList.add('done');
+  }
+}
+
+function showSteps() {
+  document.getElementById('step1').style.display = currentStep===1?'block':'none';
+  document.getElementById('step2').style.display = currentStep===2?'block':'none';
+  document.getElementById('step3').style.display = currentStep===3?'block':'none';
+  document.getElementById('successScreen').style.display = 'none';
+}
+
+function closeModal() {
+  document.getElementById('payModal').classList.remove('open');
+}
+
+function selectPay(el, method) {
+  document.querySelectorAll('.pay-method').forEach(m=>m.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPayMethod = method;
+  document.getElementById('upiBox').style.display = method==='upi' ? 'block' : 'none';
+  document.getElementById('utrBox').style.display = method==='upi' ? 'block' : 'none';
+}
+
+// ─── ORDERS (pending confirmation) ───
+let pendingOrders = [];
+
+async function loadPendingOrdersFromSupabase() {
+  if (!_supabase) return false;
+  try {
+    const { data, error } = await _supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    pendingOrders = (data || []).map(mapSupabaseOrderToUi);
+    return true;
+  } catch (e) {
+    console.warn('Could not load orders from Supabase:', e.message);
+    return false;
+  }
+}
+
+function savePendingOrdersLocal() {
+  try { localStorage.setItem('aquashop_pendingOrders', JSON.stringify(pendingOrders)); } catch(e) {}
+}
+
+function loadPendingOrdersLocal() {
+  try {
+    const s = localStorage.getItem('aquashop_pendingOrders');
+    if (s) pendingOrders = JSON.parse(s);
+  } catch(e) {}
+}
+
+function mapSupabaseOrderToUi(row) {
+  return {
+    id: row.id,
+    orderNum: row.order_num,
+    name: row.customer_name,
+    phone: row.customer_phone,
+    addr: row.customer_address,
+    notes: row.notes || '',
+    items: Array.isArray(row.items) ? row.items : [],
+    sub: Number(row.subtotal || 0),
+    tax: Number(row.tax || 0),
+    total: Number(row.total || 0),
+    payment: row.payment_method || 'UPI',
+    utr: row.utr || 'N/A',
+    time: row.created_at ? new Date(row.created_at).toLocaleString('en-IN') : new Date().toLocaleString('en-IN'),
+    status: row.status || 'pending'
+  };
+}
+
+loadPendingOrdersLocal();
+
+async function confirmPayment() {
+  if (selectedPayMethod === 'upi') {
+    const utr = document.getElementById('utrInput').value.trim();
+    if (!utr) { showToast('⚠️ Please enter your UTR / Transaction ID!'); return; }
+  }
+
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const addr = document.getElementById('custAddress').value.trim();
+  if (!name || !phone || !addr) {
+    showToast('⚠️ Please fill in your name, phone and address!');
+    goStep(2);
+    return;
+  }
+
+  const notes = document.getElementById('custNotes').value.trim();
+  const utr = selectedPayMethod === 'upi' ? document.getElementById('utrInput').value.trim() : 'N/A';
+  const orderNum = 'AQ-' + Date.now().toString().slice(-6);
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const tax = Math.round(sub*0.05);
+  const total = sub + tax;
+  const orderItems = cart.map(c => ({ id:c.id, name:c.name, emoji:c.emoji, price:c.price, qty:c.qty }));
+
+  const insufficient = orderItems.find(item => {
+    const fish = fishData.find(f => String(f.id) === String(item.id));
+    return !fish || Number(fish.qty) < Number(item.qty);
+  });
+  if (insufficient) {
+    showToast('⚠️ Some items are out of stock. Please refresh and try again.');
+    await loadFishFromSupabase();
+    renderCart();
+    return;
+  }
+
+  const order = {
+    orderNum, name, phone, addr, notes,
+    items: orderItems,
+    sub, tax, total,
+    payment: selectedPayMethod.toUpperCase(),
+    utr,
+    time: new Date().toLocaleString('en-IN'),
+    status: 'pending'
+  };
+
+  const confirmBtn = document.querySelector('#step3 .btn-next');
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '⏳ Placing Order...';
+  }
+
+  try {
+    if (_supabase) {
+      const payload = {
+        order_num: order.orderNum,
+        customer_name: order.name,
+        customer_phone: order.phone,
+        customer_address: order.addr,
+        notes: order.notes,
+        items: order.items,
+        subtotal: order.sub,
+        tax: order.tax,
+        total: order.total,
+        payment_method: order.payment,
+        utr: order.utr,
+        status: order.status
+      };
+      const { data, error } = await _supabase.from('orders').insert([payload]).select().single();
+      if (error) throw error;
+      order.id = data.id;
+      pendingOrders.unshift(mapSupabaseOrderToUi(data));
+    } else {
+      pendingOrders.unshift(order);
+      savePendingOrdersLocal();
+    }
+
+    const itemList = cart.map(c=>`${c.emoji} ${c.name} × ${c.qty}`).join(', ');
+    cart = [];
+    updateCartCount();
+    renderCart();
+
+    document.getElementById('step3').style.display='none';
+    document.getElementById('successScreen').style.display='block';
+    document.getElementById('orderNumDisplay').textContent = '🧾 Order #' + orderNum;
+    document.getElementById('orderDetailsBlock').innerHTML = `
+      <p>👤 <strong>Name:</strong> ${name}</p>
+      <p>📞 <strong>Phone:</strong> ${phone}</p>
+      <p>📍 <strong>Address:</strong> ${addr}</p>
+      <p>🐠 <strong>Items:</strong> ${itemList}</p>
+      <p>💰 <strong>Total:</strong> ${SHOP_CONFIG.currency}${total.toLocaleString('en-IN')}</p>
+      <p>💳 <strong>Payment:</strong> ${selectedPayMethod.toUpperCase()}${utr!=='N/A'?' | UTR: '+utr:''}</p>
+      ${notes?`<p>📝 <strong>Notes:</strong> ${notes}</p>`:''}
+      <p style="margin-top:12px;background:#fff3cd;padding:10px;border-radius:8px;font-size:.82rem;color:#856404;">⏳ Your order is pending payment confirmation by the shop owner.</p>
+    `;
+    for(let i=1;i<=3;i++) {
+      const el=document.getElementById('si'+i);
+      el.classList.remove('active');
+      el.classList.add('done');
+    }
+    renderOrders();
+  } catch (e) {
+    console.error('Order placement failed:', e);
+    showToast('❌ Could not place order. Check your database setup.');
+  } finally {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = '✅ Confirm Order';
+    }
+  }
+}
+
+function renderOrders() {
+  const panel = document.getElementById('ordersList');
+  const badge = document.getElementById('pendingBadge');
+  if (!panel) return;
+  const pending = pendingOrders.filter(o => o.status === 'pending');
+  if (badge) badge.innerHTML = pending.length > 0 ? `<span class="order-badge">${pending.length}</span>` : '';
+  if (!pendingOrders.length) { panel.innerHTML = '<p class="no-orders">No orders yet.</p>'; return; }
+  // Show newest first
+  const sorted = [...pendingOrders].reverse();
+  panel.innerHTML = sorted.map(o => {
+    const isPending = o.status === 'pending';
+    return `<div class="order-card ${o.status}">
+      <div class="oc-header">
+        <span class="oc-num">🧾 Order #${o.orderNum}</span>
+        <span class="oc-status ${o.status}">${o.status === 'pending' ? '⏳ Pending' : o.status === 'confirmed' ? '✅ Confirmed' : '❌ Rejected'}</span>
+      </div>
+      <div class="oc-details">
+        <b>👤</b> ${o.name} &nbsp;|&nbsp; <b>📞</b> ${o.phone}<br/>
+        <b>📍</b> ${o.addr}<br/>
+        <b>🐠 Items:</b> ${o.items.map(i=>`${i.emoji} ${i.name} × ${i.qty}`).join(', ')}<br/>
+        <b>💰 Total:</b> ${SHOP_CONFIG.currency}${o.total.toLocaleString('en-IN')} &nbsp;|&nbsp;
+        <b>💳</b> ${o.payment}${o.utr!=='N/A'?' | UTR: '+o.utr:''}<br/>
+        <b>🕐</b> ${o.time}${o.notes?`<br/><b>📝</b> ${o.notes}`:''}
+      </div>
+      ${isPending ? `<div class="oc-actions">
+        <button class="btn-confirm" onclick="processOrder('${o.orderNum}','confirm')">✅ Confirm & Update Stock</button>
+        <button class="btn-reject"  onclick="processOrder('${o.orderNum}','reject')">❌ Reject Order</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function processOrder(orderNum, action) {
+  const order = pendingOrders.find(o => o.orderNum === orderNum);
+  if (!order) return;
+
+  if (action === 'confirm') {
+    if (!confirm('Confirm payment received for Order #' + orderNum + '?\nThis will reduce stock for the items.')) return;
+    try {
+      for (const item of order.items) {
+        const fish = fishData.find(f => String(f.id) === String(item.id));
+        if (!fish) throw new Error('Fish not found for item ' + item.name);
+        if (Number(fish.qty) < Number(item.qty)) throw new Error('Not enough stock for ' + item.name);
+        const newQty = Number(fish.qty) - Number(item.qty);
+        if (_supabase) {
+          const { error } = await _supabase.from('fish').update({ qty: newQty }).eq('id', fish.id);
+          if (error) throw error;
+        }
+        fish.qty = newQty;
+      }
+
+      order.status = 'confirmed';
+      if (_supabase && order.id) {
+        const { error } = await _supabase.from('orders').update({ status: 'confirmed' }).eq('id', order.id);
+        if (error) throw error;
+      } else {
+        savePendingOrdersLocal();
+      }
+
+      saveInventoryLocal();
+      renderCatalog();
+      renderCart();
+      renderOrders();
+      renderAdmin();
+      showToast('✅ Order confirmed! Stock updated for everyone.');
+    } catch (e) {
+      console.error('Confirm order failed:', e);
+      showToast('❌ Could not confirm order: ' + e.message);
+      await loadFishFromSupabase();
+      await loadPendingOrdersFromSupabase();
+      renderOrders();
+      renderAdmin();
+    }
+  } else {
+    if (!confirm('Reject Order #' + orderNum + '?\nStock will NOT be reduced.')) return;
+    try {
+      order.status = 'rejected';
+      if (_supabase && order.id) {
+        const { error } = await _supabase.from('orders').update({ status: 'rejected' }).eq('id', order.id);
+        if (error) throw error;
+      } else {
+        savePendingOrdersLocal();
+      }
+      renderOrders();
+      renderAdmin();
+      showToast('❌ Order rejected. Stock unchanged.');
+    } catch (e) {
+      console.error('Reject order failed:', e);
+      showToast('❌ Could not reject order.');
+    }
+  }
+}
+
+// ─── ADMIN ───
+function adminLogin() {
+  const u=document.getElementById('adminUser').value;
+  const p=document.getElementById('adminPass').value;
+  if (u===SHOP_CONFIG.adminUser && p===SHOP_CONFIG.adminPass) {
+    isAdmin=true;
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').classList.add('visible');
+    renderAdmin();
+  } else { showToast('❌ Wrong username or password!'); }
+}
+
+function adminLogout() {
+  isAdmin=false;
+  document.getElementById('adminLogin').style.display='block';
+  document.getElementById('adminPanel').classList.remove('visible');
+  document.getElementById('adminUser').value='';
+  document.getElementById('adminPass').value='';
+}
+
+function renderAdmin() {
+  renderOrders();
+  const total=fishData.reduce((s,f)=>s+f.qty,0);
+  const low=fishData.filter(f=>f.qty>0&&f.qty<=5).length;
+  const out=fishData.filter(f=>f.qty===0).length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="s-num">${fishData.length}</div><div class="s-label">Fish Types</div></div>
+    <div class="stat-card"><div class="s-num">${total}</div><div class="s-label">Total Stock</div></div>
+    <div class="stat-card"><div class="s-num" style="color:#e63946">${low}</div><div class="s-label">Low Stock</div></div>
+    <div class="stat-card"><div class="s-num" style="color:#721c24">${out}</div><div class="s-label">Out of Stock</div></div>`;
+  document.getElementById('inventoryTable').innerHTML=fishData.map(f=>{
+    const status=f.qty===0?'<span class="badge out">Out of Stock</span>':f.qty<=5?'<span class="badge low">Low Stock</span>':'<span class="badge in-stock">In Stock</span>';
+    const thumb = f.img ? `<img src="${f.img}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'"/>` : '';
+    return `<tr>
+      <td>${thumb}${f.emoji} ${f.name}</td><td>${f.type}</td>
+      <td>${SHOP_CONFIG.currency}${f.price.toLocaleString('en-IN')}</td>
+      <td>${f.qty}</td><td>${status}</td>
+      <td><div class="action-btns">
+        <button class="edit-btn" onclick="editFish(${f.id})">✏️ Edit</button>
+        <button class="del-btn" onclick="deleteFish(${f.id})">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function saveFish() {
+  const name    = document.getElementById('fName').value.trim();
+  const type    = document.getElementById('fType').value;
+  const emoji   = document.getElementById('fEmoji').value.trim() || '🐟';
+  const price   = parseFloat(document.getElementById('fPrice').value);
+  const qty     = parseInt(document.getElementById('fQty').value);
+  const desc    = document.getElementById('fDesc').value.trim();
+  const pickVal = document.getElementById('fImagePicklist') ? document.getElementById('fImagePicklist').value : '';
+  let   img     = document.getElementById('fImg').value.trim() || pickVal || getLibraryImage(name);
+  const eid     = document.getElementById('editId').value;
+
+  if (!name || isNaN(price) || isNaN(qty)) { showToast('⚠️ Fill all required fields!'); return; }
+
+  const saveBtn = document.querySelector('.add-fish-form .btn-primary');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving...'; }
+
+  // If device photo selected, encode it to base64 for local storage
+  const fileInput = document.getElementById('fImgFile');
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    try {
+      img = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = () => resolve(img);
+        reader.readAsDataURL(fileInput.files[0]);
+      });
+    } catch(e) {}
+  }
+
+  if (eid) {
+    const fish = fishData.find(f => f.id === parseInt(eid));
+    if (fish) { fish.name=name; fish.type=type; fish.emoji=emoji; fish.price=price; fish.qty=qty; fish.desc=desc; fish.img=img; }
+    if (_supabase) {
+      try {
+        await _supabase.from('fish').update({name,type,emoji,price,qty,description:desc,img}).eq('id',parseInt(eid));
+        showToast('✅ Fish updated for everyone!');
+      } catch(e) { showToast('✅ Fish updated locally!'); }
+    } else {
+      showToast('✅ Fish updated!');
+    }
+  } else {
+    if (_supabase) {
+      try {
+        const { data, error } = await _supabase.from('fish').insert([{name,type,emoji,price,qty,description:desc,img}]).select();
+        if (error) throw error;
+        fishData.push({ id:data[0].id, name,type,emoji,price,qty,desc,img });
+        nextId = data[0].id + 1;
+        showToast('✅ Fish added for everyone!');
+      } catch(e) {
+        fishData.push({ id:nextId++, name,type,emoji,price,qty,desc,img });
+        showToast('✅ Fish added locally!');
+      }
+    } else {
+      fishData.push({ id:nextId++, name,type,emoji,price,qty,desc,img });
+      showToast('✅ Fish added!');
+    }
+  }
+
+  saveInventoryLocal();
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = '💾 Save Fish'; }
+  clearForm();
+  renderAdmin();
+  renderCatalog();
+}
+
+function editFish(id) {
+  const f=fishData.find(f=>f.id===id); if(!f) return;
+  document.getElementById('fName').value=f.name;
+  document.getElementById('fType').value=f.type;
+  document.getElementById('fEmoji').value=f.emoji;
+  document.getElementById('fPrice').value=f.price;
+  document.getElementById('fQty').value=f.qty;
+  document.getElementById('fDesc').value=f.desc||'';
+  document.getElementById('fImg').value=f.img||'';
+  previewImg(f.img||'');
+  syncPicklistToImage(f.img||'');
+  document.getElementById('editId').value=f.id;
+  window.scrollTo({top:document.querySelector('.add-fish-form').offsetTop-80,behavior:'smooth'});
+}
+
+async function deleteFish(id) {
+  if(!confirm('Remove this fish from inventory?')) return;
+  const ok = await deleteFishFromSupabase(id);
+  if (ok) {
+    fishData=fishData.filter(f=>f.id!==id);
+    showToast('🗑️ Fish removed for everyone!');
+    renderAdmin();
+    renderCatalog();
+  }
+}
+
+function clearForm() {
+  ['fName','fEmoji','fPrice','fQty','fDesc','fImg'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fType').value='Freshwater';
+  const picklist = document.getElementById('fImagePicklist');
+  if (picklist) picklist.value = '';
+  document.getElementById('editId').value='';
+  document.getElementById('imgPreview').style.display='none';
+}
+
+function handleFishImageUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('⚠️ Please choose an image file'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    document.getElementById('fImg').value = dataUrl;
+    previewImg(dataUrl);
+    showToast('✅ Photo ready. Click Save Fish to apply.');
+  };
+  reader.onerror = function() { showToast('❌ Could not read this image. Try another.'); };
+  reader.readAsDataURL(file);
+}
+
+function removeFishPhoto() {
+  document.getElementById('fImg').value = '';
+  const fileInput = document.getElementById('fImgFile');
+  if (fileInput) fileInput.value = '';
+  previewImg('');
+  showToast('Photo removed. Click Save Fish to apply.');
+}
+
+function previewImg(url) {
+  const box=document.getElementById('imgPreview');
+  const img=document.getElementById('imgPreviewImg');
+  if(url){img.src=url;box.style.display='block';}
+  else{box.style.display='none';img.src='';}
+}
+
+function saveSettings() {
+  SHOP_CONFIG.upiId=document.getElementById('settUpiId').value.trim();
+  SHOP_CONFIG.upiName=document.getElementById('settUpiName').value.trim();
+  SHOP_CONFIG.upiQR=document.getElementById('settUpiQR').value.trim();
+  showToast('✅ Payment settings saved!');
+}
+
+
+async function loadFishFromSupabase() {
+  if (!_supabase) {
+    loadInventoryLocal();
+    renderCatalog();
+    return false;
+  }
+  try {
+    const { data, error } = await _supabase.from('fish').select('*').order('id', { ascending: true });
+    if (error) throw error;
+    if (data && data.length) {
+      fishData = data.map(row => ({
+        id: row.id,
+        name: row.name,
+        type: row.type,
+        emoji: row.emoji || '🐟',
+        price: Number(row.price || 0),
+        qty: Number(row.qty || 0),
+        desc: row.description || '',
+        img: row.img || getLibraryImage(row.name)
+      }));
+      nextId = Math.max(...fishData.map(f => Number(f.id) || 0), 0) + 1;
+      saveInventoryLocal();
+    }
+    renderCatalog();
+    return true;
+  } catch (e) {
+    console.warn('Could not load fish from Supabase:', e.message);
+    loadInventoryLocal();
+    renderCatalog();
+    return false;
+  }
+}
+
+async function deleteFishFromSupabase(id) {
+  if (_supabase) {
+    try {
+      const { error } = await _supabase.from('fish').delete().eq('id', id);
+      if (error) throw error;
+    } catch (e) {
+      showToast('❌ Could not delete fish from database.');
+      return false;
+    }
+  }
+  fishData = fishData.filter(f => f.id !== id);
+  saveInventoryLocal();
+  return true;
+}
+
+function setupRealtimeSync() {
+  if (!_supabase) return;
+  try {
+    _supabase.channel('public-fish-orders-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'fish' }, async () => {
+        await loadFishFromSupabase();
+        if (isAdmin) renderAdmin();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async () => {
+        await loadPendingOrdersFromSupabase();
+        if (isAdmin) renderAdmin();
+      })
+      .subscribe();
+  } catch (e) {
+    console.warn('Realtime unavailable:', e.message);
+  }
+}
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ─── BOOT ───
+(async function boot() {
+  initUI();
+  await loadFishFromSupabase();
+  await loadPendingOrdersFromSupabase();
+  renderCatalog();
+  renderCart();
+  setupRealtimeSync();
+})();
+
+// Keep UPI box visible by default on step 3 load
+document.getElementById('upiBox').style.display='block';
+document.getElementById('utrBox').style.display='block';
+</script>
+</body>
+</html>
