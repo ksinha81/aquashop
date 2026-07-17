@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquaShop - Pending Order Flow</title>
+</head>
+<body>
+  <!-- Use your existing page UI. The important corrected logic is below. -->
+  <script>
+async function confirmPayment() {
+  if (selectedPayMethod === 'upi') {
+    const utr = document.getElementById('utrInput').value.trim();
+    if (!utr) {
+      showToast('⚠️ Please enter your UTR / Transaction ID!');
+      return;
+    }
+  }
+
+  const name = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const addr = document.getElementById('custAddress').value.trim();
+  if (!name || !phone || !addr) {
+    showToast('⚠️ Please fill in your name, phone and address!');
+    goStep(2);
+    return;
+  }
+
+  const notes = document.getElementById('custNotes').value.trim();
+  const utr = selectedPayMethod === 'upi'
+    ? document.getElementById('utrInput').value.trim()
+    : 'N/A';
+
+  const orderNum = 'AQ-' + Date.now().toString().slice(-6);
+  const sub = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  const tax = Math.round(sub * 0.05);
+  const total = sub + tax;
+  const orderItems = cart.map(c => ({
+    id: c.id,
+    name: c.name,
+    emoji: c.emoji,
+    price: c.price,
+    qty: c.qty
+  }));
+
+  const insufficient = orderItems.find(item => {
+    const fish = fishData.find(f => String(f.id) === String(item.id));
+    return !fish || Number(fish.qty) < Number(item.qty);
+  });
+
+  if (insufficient) {
+    showToast('⚠️ Some items are out of stock. Please refresh and try again.');
+    await loadFishFromSupabase();
+    renderCart();
+    return;
+  }
+
+  const order = {
+    orderNum,
+    name,
+    phone,
+    addr,
+    notes,
+    items: orderItems,
+    sub,
+    tax,
+    total,
+    payment: selectedPayMethod.toUpperCase(),
+    utr,
+    time: new Date().toLocaleString('en-IN'),
+    status: 'pending'
+  };
+
+  const confirmBtn = document.querySelector('#step3 .btn-next');
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '⏳ Placing Order...';
+  }
+
+  try {
+    if (_supabase) {
+      const payload = {
+        order_num: order.orderNum,
+        customer_name: order.name,
+        customer_phone: order.phone,
+        customer_address: order.addr,
+        notes: order.notes,
+        items: order.items,
+        subtotal: order.sub,
+        tax: order.tax,
+        total: order.total,
+        payment_method: order.payment,
+        utr: order.utr,
+        status: order.status
+      };
+
+      const { data, error } = await _supabase
+        .from('orders')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) throw error;
+      order.id = data.id;
+      pendingOrders.unshift(mapSupabaseOrderToUi(data));
+    } else {
+      pendingOrders.unshift(order);
+      savePendingOrdersLocal();
+    }
+
+    const itemList = cart.map(c => `${c.emoji} ${c.name} × ${c.qty}`).join(', ');
+    cart = [];
+    updateCartCount();
+    renderCart();
+
+    document.getElementById('step3').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('orderNumDisplay').textContent = '🧾 Order #' + orderNum;
+    document.getElementById('orderDetailsBlock').innerHTML = `
+      <p>👤 <strong>Name:</strong> ${name}</p>
+      <p>📞 <strong>Phone:</strong> ${phone}</p>
+      <p>📍 <strong>Address:</strong> ${addr}</p>
+      <p>🐠 <strong>Items:</strong> ${itemList}</p>
+      <p>💰 <strong>Total:</strong> ${SHOP_CONFIG.currency}${total.toLocaleString('en-IN')}</p>
+      <p>💳 <strong>Payment:</strong> ${selectedPayMethod.toUpperCase()}${utr !== 'N/A' ? ' | UTR: ' + utr : ''}</p>
+      ${notes ? `<p>📝 <strong>Notes:</strong> ${notes}</p>` : ''}
+      <p style="margin-top:12px;background:#fff3cd;padding:10px;border-radius:8px;font-size:.82rem;color:#856404;">⏳ Your order is pending payment confirmation by the shop owner.</p>
+    `;
+
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById('si' + i);
+      el.classList.remove('active');
+      el.classList.add('done');
+    }
+
+    renderOrders();
+    if (isAdmin) renderAdmin();
+    showToast('✅ Order placed! Waiting for admin confirmation.');
+  } catch (e) {
+    console.error('Order placement failed:', e);
+    showToast('❌ Could not place order. Check your database setup.');
+  } finally {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = '✅ Confirm Order';
+    }
+  }
+}
+
+async function processOrder(orderNum, action) {
+  const order = pendingOrders.find(o => o.orderNum === orderNum);
+  if (!order) return;
+
+  if (action === 'confirm') {
+    if (!confirm('Confirm payment received for Order #' + orderNum + '?\nThis will reduce stock for the items.')) return;
+
+    try {
+      for (const item of order.items) {
+        const fish = fishData.find(f => String(f.id) === String(item.id));
+        if (!fish) throw new Error('Fish not found for item ' + item.name);
+        if (Number(fish.qty) < Number(item.qty)) throw new Error('Not enough stock for ' + item.name);
+
+        const newQty = Number(fish.qty) - Number(item.qty);
+        if (_supabase) {
+          const { error } = await _supabase
+            .from('fish')
+            .update({ qty: newQty })
+            .eq('id', fish.id);
+          if (error) throw error;
+        }
+        fish.qty = newQty;
+      }
+
+      order.status = 'confirmed';
+      if (_supabase && order.id) {
+        const { error } = await _supabase
+          .from('orders')
+          .update({ status: 'confirmed' })
+          .eq('id', order.id);
+        if (error) throw error;
+      } else {
+        savePendingOrdersLocal();
+      }
+
+      saveInventoryLocal();
+      renderCatalog();
+      renderCart();
+      renderOrders();
+      renderAdmin();
+      showToast('✅ Order confirmed! Stock updated for everyone.');
+    } catch (e) {
+      console.error('Confirm order failed:', e);
+      showToast('❌ Could not confirm order: ' + e.message);
+      await loadFishFromSupabase();
+      await loadPendingOrdersFromSupabase();
+      renderOrders();
+      renderAdmin();
+    }
+  } else {
+    if (!confirm('Reject Order #' + orderNum + '?\nStock will NOT be reduced.')) return;
+    try {
+      order.status = 'rejected';
+      if (_supabase && order.id) {
+        const { error } = await _supabase
+          .from('orders')
+          .update({ status: 'rejected' })
+          .eq('id', order.id);
+        if (error) throw error;
+      } else {
+        savePendingOrdersLocal();
+      }
+      renderOrders();
+      renderAdmin();
+      showToast('❌ Order rejected. Stock unchanged.');
+    } catch (e) {
+      console.error('Reject order failed:', e);
+      showToast('❌ Could not reject order.');
+    }
+  }
+}
+  </script>
+</body>
+</html>
